@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, request
+from db import get_db_connection
+from typing import Any, cast
 
 app = Flask(__name__)
 
@@ -54,12 +56,11 @@ def get_hotel(hotel_id):
 
     return jsonify({"error": "Hotel not found"}), 404
 # Temporary reservation storage
-reservations = []
-next_reservation_id = 1
+
 
 @app.route("/api/reservations", methods=["POST"])
 def create_reservation():
-    global next_reservation_id
+    from datetime import date
 
     data = request.get_json(silent=True) or {}
 
@@ -71,68 +72,132 @@ def create_reservation():
         "guests"
     ]
 
-    missing = [
-        field for field in required_fields
-        if field not in data
-    ]
+    missing = [field for field in required_fields if field not in data]
 
     if missing:
-        return jsonify({
-            "error": "Missing required fields",
-            "fields": missing
-        }), 400
-
-    hotel = next(
-        (h for h in hotels if h["id"] == data["hotel_id"]),
-        None
-    )
-
-    if hotel is None:
-        return jsonify({"error": "Hotel not found"}), 404
+        return jsonify({"error": "Missing fields", "fields": missing}), 400
 
     try:
-        from datetime import date
-
+        guest_name = data["guest_name"].strip()
+        room_id = int(data["hotel_id"])
         check_in = date.fromisoformat(data["check_in"])
         check_out = date.fromisoformat(data["check_out"])
         guests = int(data["guests"])
 
-        if check_in < date.today():
-            return jsonify({"error": "Check-in cannot be in the past"}), 400
+        if not guest_name or check_in < date.today() or check_out <= check_in or guests < 1:
+            return jsonify({"error": "Invalid booking details"}), 400
 
-        if check_out <= check_in:
-            return jsonify({"error": "Check-out must be after check-in"}), 400
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
 
-        if guests < 1:
-            return jsonify({"error": "Guests must be at least 1"}), 400
+        cursor.execute(
+            "SELECT user_id FROM users WHERE full_name = %s LIMIT 1",
+            (guest_name,)
+        )
+        user = cast(dict[str, Any] | None, cursor.fetchone())
 
-    except (ValueError, TypeError):
-        return jsonify({"error": "Invalid dates or guest count"}), 400
+        if not user:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Guest not found in users table"}), 404
 
-    nights = (check_out - check_in).days
-    total_price = nights * hotel["price_per_night"]
+        cursor.execute(
+            "SELECT room_id, price_per_night, capacity FROM rooms WHERE room_id = %s",
+            (room_id,)
+        )
+        room = cast(dict[str, Any] | None, cursor.fetchone())
 
-    reservation = {
-        "reservation_id": next_reservation_id,
-        "guest_name": data["guest_name"],
-        "hotel_id": hotel["id"],
-        "hotel_name": hotel["name"],
-        "check_in": check_in.isoformat(),
-        "check_out": check_out.isoformat(),
-        "guests": guests,
-        "nights": nights,
-        "total_price": total_price,
-        "status": "Confirmed"
-    }
+        if not room:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Room not found"}), 404
 
-    reservations.append(reservation)
-    next_reservation_id += 1
+        if guests > room["capacity"]:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Guest count exceeds room capacity"}), 400
 
-    return jsonify(reservation), 201
+        nights = (check_out - check_in).days
+        total_price = nights * float(room["price_per_night"])
 
+        cursor.execute(
+            """
+            INSERT INTO reservations
+            (user_id, room_id, check_in, check_out, guests,
+             total_amount, booking_status)
+            VALUES (%s, %s, %s, %s, %s, %s, 'Confirmed')
+            """,
+            (user["user_id"], room_id, check_in, check_out,
+             guests, total_price)
+        )
+
+        reservation_id = cursor.lastrowid
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "reservation_id": reservation_id,
+            "guest_name": guest_name,
+            "room_id": room_id,
+            "check_in": check_in.isoformat(),
+            "check_out": check_out.isoformat(),
+            "guests": guests,
+            "total_price": round(total_price, 2),
+            "status": "Confirmed"
+        }), 201
+
+    except (ValueError, TypeError, AttributeError):
+        return jsonify({"error": "Invalid booking details"}), 400
+
+    except Exception:
+        app.logger.exception("Reservation database operation failed")
+        return jsonify({"error": "Database operation failed"}), 500
 
 @app.route("/api/reservations", methods=["GET"])
 def get_reservations():
-    return jsonify(reservations)
+    from datetime import date
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT
+                r.reservation_id,
+                u.full_name AS guest_name,
+                r.room_id,
+                r.check_in,
+                r.check_out,
+                r.guests,
+                r.total_amount,
+                r.booking_status
+            FROM reservations r
+            JOIN users u ON r.user_id = u.user_id
+            ORDER BY r.reservation_id DESC
+        """)
+
+        reservations = cursor.fetchall()
+
+        reservations = [
+            {
+                **cast(dict[str, Any], reservation),
+                "check_in": cast(date, cast(dict[str, Any], reservation)["check_in"]).isoformat(),
+                "check_out": cast(date, cast(dict[str, Any], reservation)["check_out"]).isoformat(),
+                "total_amount": float(cast(dict[str, Any], reservation)["total_amount"]),
+            }
+            for reservation in reservations
+        ]
+
+        return jsonify(reservations)
+
+    except Exception:
+        app.logger.exception("Could not retrieve reservations")
+        return jsonify({"error": "Database operation failed"}), 500
+
+    finally:
+        cursor.close()
+        connection.close()
 if __name__ == "__main__":
     app.run(debug=True)
