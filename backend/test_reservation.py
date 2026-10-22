@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 url = "http://127.0.0.1:5000/api/reservations"
 
 booking = {
-    "guest_name": "Test Guest",
+    "guest_name": "Rahul Sharma",
     "hotel_id": 1,
     "check_in": "2027-01-10",
     "check_out": "2027-01-12",
