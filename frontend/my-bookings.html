@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | GrandStay Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .bookings-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .bookings-container h1 {
+            color: #183b70;
+            text-align: center;
+        }
+
+        .booking-card {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f7fb;
+            border-left: 5px solid #173f82;
+            border-radius: 8px;
+        }
+
+        .booking-card p {
+            margin: 10px 0;
+        }
+
+        .bookings-container a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 18px;
+            background: #173f82;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="bookings-container">
+        <h1>My Bookings</h1>
+        <p>View your booking details below.</p>
+
+        <div id="bookingsList"></div>
+        <nav class="navbar">
+    <a href="index.html">Home</a>
+    <a href="rooms.html">Rooms</a>
+    <a href="login.html">Login</a>
+    <a href="register.html">Register</a>
+    <a href="my-bookings.html">My Bookings</a>
+</nav>
+
+        <a href="rooms.html">Book Another Room</a>
+        <a href="index.html">Home</a>
+    </main>
+
+    <script>
+        const bookingsList = document.getElementById("bookingsList");
+        const savedBooking = localStorage.getItem("hotelBooking");
+
+        if (savedBooking) {
+            const booking = JSON.parse(savedBooking);
+
+            const card = document.createElement("div");
+            card.className = "booking-card";
+
+            const details = [
+                ["Guest Name", booking.guestName],
+                ["Email", booking.guestEmail],
+                ["Room", booking.roomType + " Room"],
+                ["Check-in", booking.checkIn],
+                ["Check-out", booking.checkOut],
+                ["Guests", booking.guests],
+                ["Nights", booking.nights],
+                ["Total Price", "₹" +
+                    Number(booking.totalPrice).toLocaleString("en-IN")]
+            ];
+
+            details.forEach(function (detail) {
+                const paragraph = document.createElement("p");
+                const label = document.createElement("strong");
+
+                label.textContent = detail[0] + ": ";
+                paragraph.appendChild(label);
+                paragraph.appendChild(
+                    document.createTextNode(String(detail[1]))
+                );
+
+                card.appendChild(paragraph);
+            });
+
+            bookingsList.appendChild(card);
+        } else {
+            const message = document.createElement("p");
+            message.className = "empty-message";
+            message.textContent =
+                "No booking details found. Please book a room first.";
+
+            bookingsList.appendChild(message);
+        }
+    </script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

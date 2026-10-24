@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Room | GrandStay Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .booking-container {
+            max-width: 650px;
+            margin: 35px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .booking-container h1 {
+            text-align: center;
+            color: #183b70;
+        }
+
+        .booking-container label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .booking-container input,
+        .booking-container select {
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .booking-container button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 22px;
+            background: #173f82;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #totalPrice {
+            font-size: 20px;
+            font-weight: bold;
+            color: #946515;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="booking-container">
+        <h1>Book Your Stay</h1>
+        <p>Enter your details to reserve a room.</p>
+
+        <form id="bookingForm">
+            <label for="guestName">Full Name</label>
+            <input type="text" id="guestName" required>
+
+            <label for="guestEmail">Email Address</label>
+            <input type="email" id="guestEmail" required>
+
+            <label for="roomType">Select Room</label>
+            <select id="roomType" required>
+                <option value="Standard">Standard Room - ₹1,500/night</option>
+                <option value="Deluxe">Deluxe Room - ₹3,000/night</option>
+                <option value="Family">Family Room - ₹4,500/night</option>
+            </select>
+
+            <label for="checkIn">Check-in Date</label>
+            <input type="date" id="checkIn" required>
+
+            <label for="checkOut">Check-out Date</label>
+            <input type="date" id="checkOut" required>
+
+            <label for="guests">Number of Guests</label>
+            <input type="number" id="guests" min="1" max="10" value="1" required>
+
+            <p id="totalPrice">Total Price: ₹0</p>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+
+        <p id="bookingMessage" role="status"></p>
+        <a href="rooms.html">Back to Rooms</a>
+        <nav class="navbar">
+    <a href="index.html">Home</a>
+    <a href="rooms.html">Rooms</a>
+    <a href="login.html">Login</a>
+    <a href="register.html">Register</a>
+    <a href="my-bookings.html">My Bookings</a>
+</nav>
+    </main>
+
+    <script>
+        const prices = {
+            Standard: 1500,
+            Deluxe: 3000,
+            Family: 4500
+        };
+
+        const roomType = document.getElementById("roomType");
+        const checkIn = document.getElementById("checkIn");
+        const checkOut = document.getElementById("checkOut");
+        const totalPrice = document.getElementById("totalPrice");
+        const bookingForm = document.getElementById("bookingForm");
+        const bookingMessage = document.getElementById("bookingMessage");
+
+        const today = new Date();
+        const todayString =
+            today.getFullYear() + "-" +
+            String(today.getMonth() + 1).padStart(2, "0") + "-" +
+            String(today.getDate()).padStart(2, "0");
+
+        checkIn.min = todayString;
+        checkOut.min = todayString;
+
+        const params = new URLSearchParams(window.location.search);
+        const selectedRoom = params.get("room");
+
+        if (selectedRoom && prices[selectedRoom]) {
+            roomType.value = selectedRoom;
+        }
+
+        function calculateTotal() {
+            if (!checkIn.value || !checkOut.value) {
+                totalPrice.textContent = "Total Price: ₹0";
+                return;
+            }
+
+            const start = new Date(checkIn.value + "T00:00:00");
+            const end = new Date(checkOut.value + "T00:00:00");
+            const nights = Math.round((end - start) / 86400000);
+
+            if (nights > 0) {
+                const total = nights * prices[roomType.value];
+                totalPrice.textContent =
+                    "Total Price: ₹" +
+                    total.toLocaleString("en-IN") +
+                    " (" + nights + " night(s))";
+            } else {
+                totalPrice.textContent = "Select valid dates";
+            }
+        }
+
+        checkIn.addEventListener("change", function () {
+            checkOut.min = checkIn.value || todayString;
+
+            if (checkOut.value && checkOut.value <= checkIn.value) {
+                checkOut.value = "";
+            }
+
+            calculateTotal();
+        });
+
+        checkOut.addEventListener("change", calculateTotal);
+        roomType.addEventListener("change", calculateTotal);
+
+        bookingForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            if (checkIn.value < todayString) {
+                bookingMessage.textContent =
+                    "Check-in date cannot be in the past.";
+                return;
+            }
+
+            if (checkOut.value <= checkIn.value) {
+                bookingMessage.textContent =
+                    "Check-out must be after check-in.";
+                return;
+            }
+
+            const start = new Date(checkIn.value + "T00:00:00");
+            const end = new Date(checkOut.value + "T00:00:00");
+            const nights = Math.round((end - start) / 86400000);
+            const total = nights * prices[roomType.value];
+
+            const booking = {
+                guestName: document.getElementById("guestName").value,
+                guestEmail: document.getElementById("guestEmail").value,
+                roomType: roomType.value,
+                checkIn: checkIn.value,
+                checkOut: checkOut.value,
+                guests: document.getElementById("guests").value,
+                nights: nights,
+                totalPrice: total
+            };
+
+            localStorage.setItem(
+                "hotelBooking",
+                JSON.stringify(booking)
+            );
+            window.location.href = "confirmation.html";
+
+            bookingMessage.textContent = "Booking successful! Opening confirmation page...";
+
+window.location.href = "confirmation.html";
+        });
+
+        calculateTotal();
+    </script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
