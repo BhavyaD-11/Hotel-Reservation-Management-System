@@ -1,0 +1,84 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    color: #243247;
+}
+
+h1, h2 {
+    color: #102a43;
+}
+
+body > h1 {
+    text-align: center;
+    margin-top: 80px;
+    font-size: 42px;
+}
+
+body > p {
+    text-align: center;
+    margin: 20px;
+    font-size: 18px;
+}
+
+form {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px #00000015;
+}
+
+form input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+form button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 10px;
+    background: #102a43;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background: #b17c2c;
+}
+.navbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 25px;
+    padding: 15px;
+    background-color: #173f82;
+}
+
+.navbar a {
+    display: inline-block;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+}
+.home-page {
+    background-image: url("https://png.pngtree.com/thumb_back/fw800/background/20260501/pngtree-luxury-hotel-room-with-king-bed-elegant-decor-warm-ambience-image_21773001.webp");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}

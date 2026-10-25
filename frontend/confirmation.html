@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation | GrandStay Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .confirmation-container {
+            max-width: 650px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 55px;
+            color: green;
+        }
+
+        .confirmation-container h1 {
+            color: #183b70;
+        }
+
+        .booking-details {
+            text-align: left;
+            background: #f5f7fb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .booking-details p {
+            margin: 12px 0;
+        }
+
+        .confirmation-container a {
+            display: inline-block;
+            margin: 15px 5px 0;
+            padding: 12px 18px;
+            background: #173f82;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="confirmation-container">
+        <div class="success-icon">&#10003;</div>
+        <h1>Booking Confirmation</h1>
+        <p id="confirmationMessage">
+            Your booking details are shown below.
+        </p>
+
+        <section class="booking-details" id="bookingDetails">
+            <p><strong>Guest Name:</strong> <span id="guestName"></span></p>
+            <p><strong>Email:</strong> <span id="guestEmail"></span></p>
+            <p><strong>Room:</strong> <span id="roomType"></span></p>
+            <p><strong>Check-in:</strong> <span id="checkIn"></span></p>
+            <p><strong>Check-out:</strong> <span id="checkOut"></span></p>
+            <p><strong>Guests:</strong> <span id="guests"></span></p>
+            <p><strong>Nights:</strong> <span id="nights"></span></p>
+            <p><strong>Total Price:</strong> ₹<span id="totalPrice"></span></p>
+        </section>
+
+        <a href="index.html">Home</a>
+        <a href="rooms.html">Browse Rooms</a>
+    </main>
+
+    <script>
+        const savedBooking = localStorage.getItem("hotelBooking");
+
+        if (savedBooking) {
+            const booking = JSON.parse(savedBooking);
+
+            document.getElementById("guestName").textContent =
+                booking.guestName;
+            document.getElementById("guestEmail").textContent =
+                booking.guestEmail;
+            document.getElementById("roomType").textContent =
+                booking.roomType + " Room";
+            document.getElementById("checkIn").textContent =
+                booking.checkIn;
+            document.getElementById("checkOut").textContent =
+                booking.checkOut;
+            document.getElementById("guests").textContent =
+                booking.guests;
+            document.getElementById("nights").textContent =
+                booking.nights;
+            document.getElementById("totalPrice").textContent =
+                Number(booking.totalPrice).toLocaleString("en-IN");
+
+            document.getElementById("confirmationMessage").textContent =
+                "Your booking details have been received by this demo page.";
+        } else {
+            document.getElementById("bookingDetails").textContent =
+                "No booking details found. Please complete the booking form first.";
+            document.getElementById("confirmationMessage").textContent =
+                "Booking details are not available.";
+        }
+    </script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
