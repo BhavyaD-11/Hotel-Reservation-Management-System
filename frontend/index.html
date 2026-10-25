@@ -3,12 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Reservation System</title>
+    <title>Hotel Reservation Management System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Hotel Reservation Management System</h1>
-    <p>Welcome to our hotel reservation project.</p>
-    <script src="script.js"></script>
+
+<header class="topbar">
+    <a class="brand" href="#" data-nav="search">
+        <span class="brand-mark" aria-hidden="true"></span>
+        Grand Stay
+    </a>
+    <nav id="nav" aria-label="Main">
+        <button class="nav-btn active" data-nav="search">Rooms</button>
+        <button class="nav-btn" data-nav="bookings" id="nav-bookings" hidden>My bookings</button>
+        <button class="nav-btn" data-nav="admin" id="nav-admin" hidden>Admin</button>
+    </nav>
+    <div class="account">
+        <span id="whoami"></span>
+        <button class="btn ghost" id="btn-login">Log in</button>
+        <button class="btn ghost" id="btn-logout" hidden>Log out</button>
+    </div>
+</header>
+
+<main>
+    <!-- ============ SEARCH ============ -->
+    <section id="view-search" class="view">
+        <div class="hero">
+            <h1>Find a room for your dates</h1>
+            <p class="lede">Pick your dates and see exactly which rooms are free.</p>
+            <form id="search-form" class="search-bar">
+                <label>Check-in
+                    <input type="date" id="s-in" required>
+                </label>
+                <label>Check-out
+                    <input type="date" id="s-out" required>
+                </label>
+                <label>Guests
+                    <input type="number" id="s-guests" min="1" max="10" value="2" required>
+                </label>
+                <label>Room type
+                    <select id="s-type"><option value="">Any type</option></select>
+                </label>
+                <button class="btn primary" type="submit">Search rooms</button>
+            </form>
+        </div>
+        <p id="search-summary" class="muted"></p>
+        <div id="results" class="room-list"></div>
+    </section>
+
+    <!-- ============ MY BOOKINGS ============ -->
+    <section id="view-bookings" class="view" hidden>
+        <h2>My bookings</h2>
+        <div id="my-bookings" class="table-wrap"></div>
+    </section>
+
+    <!-- ============ ADMIN ============ -->
+    <section id="view-admin" class="view" hidden>
+        <h2>Hotel administration</h2>
+        <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="overview">Overview</button>
+            <button class="tab" data-tab="reservations">Reservations</button>
+            <button class="tab" data-tab="rooms">Rooms</button>
+            <button class="tab" data-tab="guests">Guests</button>
+        </div>
+
+        <div id="tab-overview" class="tab-panel"></div>
+
+        <div id="tab-reservations" class="tab-panel" hidden>
+            <div class="toolbar">
+                <label>Status
+                    <select id="a-status">
+                        <option value="">All</option>
+                        <option>Confirmed</option>
+                        <option>Checked-In</option>
+                        <option>Checked-Out</option>
+                        <option>Cancelled</option>
+                    </select>
+                </label>
+            </div>
+            <div id="admin-reservations" class="table-wrap"></div>
+        </div>
+
+        <div id="tab-rooms" class="tab-panel" hidden>
+            <div class="toolbar">
+                <button class="btn primary" id="btn-add-room">Add room</button>
+            </div>
+            <div id="admin-rooms" class="table-wrap"></div>
+        </div>
+
+        <div id="tab-guests" class="tab-panel" hidden>
+            <div id="admin-guests" class="table-wrap"></div>
+        </div>
+    </section>
+</main>
+
+<!-- ============ LOGIN / REGISTER ============ -->
+<dialog id="auth-dialog">
+    <div class="dialog-head">
+        <div class="tabs small">
+            <button class="tab active" data-auth="login">Log in</button>
+            <button class="tab" data-auth="register">Create account</button>
+        </div>
+        <button class="icon-btn" data-close aria-label="Close">&times;</button>
+    </div>
+
+    <form id="login-form" class="stack">
+        <label>Email <input type="email" id="l-email" required autocomplete="email"></label>
+        <label>Password <input type="password" id="l-pass" required autocomplete="current-password"></label>
+        <p class="form-error" id="login-error"></p>
+        <button class="btn primary" type="submit">Log in</button>
+        <p class="hint">Demo: rahul@example.com / guest123 &nbsp;|&nbsp; admin@hotel.com / admin123</p>
+    </form>
+
+    <form id="register-form" class="stack" hidden>
+        <label>Full name <input type="text" id="r-name" required minlength="2"></label>
+        <label>Email <input type="email" id="r-email" required autocomplete="email"></label>
+        <label>Phone (optional) <input type="tel" id="r-phone" pattern="\d{10,15}" title="10 to 15 digits"></label>
+        <label>Password (min 6) <input type="password" id="r-pass" required minlength="6" autocomplete="new-password"></label>
+        <p class="form-error" id="register-error"></p>
+        <button class="btn primary" type="submit">Create account</button>
+    </form>
+</dialog>
+
+<!-- ============ PAYMENT ============ -->
+<dialog id="pay-dialog">
+    <div class="dialog-head">
+        <h3 id="pay-title">Payment</h3>
+        <button class="icon-btn" data-close aria-label="Close">&times;</button>
+    </div>
+    <form id="pay-form" class="stack">
+        <p id="pay-summary"></p>
+        <label>Payment method
+            <select id="pay-method">
+                <option>UPI</option>
+                <option>Card</option>
+                <option>Cash</option>
+            </select>
+        </label>
+        <p class="hint">Demo payment: no real money is charged.</p>
+        <div class="row-end">
+            <button class="btn ghost" type="button" data-close>Pay later</button>
+            <button class="btn primary" type="submit">Pay now</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- ============ ROOM EDIT ============ -->
+<dialog id="room-dialog">
+    <div class="dialog-head">
+        <h3 id="room-dialog-title">Room</h3>
+        <button class="icon-btn" data-close aria-label="Close">&times;</button>
+    </div>
+    <form id="room-form" class="stack">
+        <label>Room number <input type="text" id="rm-number" required maxlength="10"></label>
+        <label>Room type <select id="rm-type" required></select></label>
+        <label>Price per night (Rs.) <input type="number" id="rm-price" required min="0" step="50"></label>
+        <label>Capacity <input type="number" id="rm-capacity" required min="1" max="10"></label>
+        <label>Description <input type="text" id="rm-desc" maxlength="255"></label>
+        <label class="check"><input type="checkbox" id="rm-active" checked> Available for booking</label>
+        <p class="form-error" id="room-error"></p>
+        <button class="btn primary" type="submit">Save</button>
+    </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
