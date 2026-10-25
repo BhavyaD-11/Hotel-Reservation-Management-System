@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Details | GrandStay Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .details-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .details-container img {
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .details-container h1 {
+            color: #183b70;
+        }
+
+        .room-price {
+            color: #9a6b18;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .details-container li {
+            margin: 10px 0;
+        }
+
+        .details-container a {
+            display: inline-block;
+            margin: 10px 10px 0 0;
+            padding: 12px 20px;
+            background: #173f82;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="details-container">
+        <h1 id="roomName">Deluxe Room</h1>
+
+        <img
+            id="roomImage"
+            src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80"
+            alt="Hotel room">
+
+        <p id="roomDescription">
+            Enjoy a comfortable and relaxing stay at GrandStay Hotel.
+        </p>
+
+        <p class="room-price" id="roomPrice">₹3,000 / night</p>
+
+        <h2>Room Amenities</h2>
+        <ul>
+            <li>Free Wi-Fi</li>
+            <li>Air conditioning</li>
+            <li>Comfortable bed</li>
+            <li>Private bathroom</li>
+            <li>Room service</li>
+        </ul>
+
+        <a href="rooms.html">Back to Rooms</a>
+        <a id="bookButton" href="booking.html?room=Deluxe">Book Now</a>
+    </main>
+
+    <script>
+        const rooms = {
+            Standard: {
+                name: "Standard Room",
+                price: 1500,
+                description: "A comfortable room suitable for up to two guests.",
+                image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80"
+            },
+            Deluxe: {
+                name: "Deluxe Room",
+                price: 3000,
+                description: "A spacious room with extra comfort for your stay.",
+                image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80"
+            },
+            Family: {
+                name: "Family Room",
+                price: 4500,
+                description: "A roomy stay designed for families and groups.",
+                image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80"
+            }
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const roomType = params.get("room") || "Deluxe";
+        const room = rooms[roomType] || rooms.Deluxe;
+
+        document.getElementById("roomName").textContent = room.name;
+        document.getElementById("roomPrice").textContent =
+            "₹" + room.price.toLocaleString("en-IN") + " / night";
+        document.getElementById("roomDescription").textContent =
+            room.description;
+        document.getElementById("roomImage").src = room.image;
+        document.getElementById("bookButton").href =
+            "booking.html?room=" + encodeURIComponent(roomType);
+    </script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
